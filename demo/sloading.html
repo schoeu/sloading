@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body{
+            margin: 0;
+            background-color: #000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        var w = window.innerWidth;
+        var h = window.innerHeight;
+        var cvs = document.querySelector('#canvas');
+        var cx = cvs.getContext('2d');
+        var anif = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+        var canif = window.cancelAnimationFrame || window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame;
+        var handleId;
+
+        var ptArr = [];
+        var processW = w * 0.7;
+        var textH = h * 0.3;
+        var tempW = (w-processW)/2;
+
+        var startx = tempW;
+        var endx = processW + tempW;
+        var processEx = 5;
+
+        init();
+        function init() {
+            cvs.width = w;
+            cvs.height = h;
+            handleId = anif(drawPoint);
+        }
+        var gravty = 0.1;
+        function Point(x, y) {
+            this.x = x;
+            this.y = y;
+            this.ex = 0;
+            this.ey = -6;
+            //this.ct = 100;
+            // this.pcent = (startx-tempW) / endx;
+            this.render = function (cx) {
+                var color = (startx-tempW) / endx;
+                cx.fillStyle = "hsl(" + 128 * color + ", 100%, 50%)";
+                cx.beginPath();
+                cx.arc(this.x,this.y,2,0,2*Math.PI,true);
+                //cx.fillRect(this.x,this.y, 1, 4);
+                cx.fill();
+
+                /**
+                 * 文字
+                 * */
+                cx.font = '160px 宋体';
+                color = color <= 1 ? color : 1;
+                cx.textAlign='center';
+                cx.fillText(parseInt(color * 100),w * 0.45,textH);
+
+            };
+
+            this.update = function () {
+                this.x += this.ex;
+                this.y += this.ey;
+                this.ey += gravty;
+            };
+        }
+
+        function drawPoint() {
+            startx += processEx;
+            cx.fillStyle = 'rgba(0,0,0,.5)';
+            cx.fillRect(0, 0, w, h);
+            if (startx > endx) {
+                canif(handleId);
+            }
+            else {
+                var p = new Point(startx, h * 0.5);
+                p.ex = Math.random() * -4;
+                if (ptArr.length < 10000) {
+                    ptArr.push(p);
+                }
+            }
+            handleId = anif(drawPoint);
+            for(var i=0;i<ptArr.length;i++) {
+                var item = ptArr[i];
+                item.render(cx);
+                item.update();
+                if (item.y > h) {
+                    ptArr.splice(i,1);
+                }
+            }
+
+        }
+
+    </script>
+</body>
+</html>
+
+
